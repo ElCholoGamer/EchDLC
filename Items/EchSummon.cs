@@ -1,5 +1,6 @@
 ﻿using Terraria;
 using Terraria.ID;
+using Terraria.Audio;
 using Terraria.ModLoader;
 using EchDLC.Projectiles;
 using EchDLC.Buffs;
@@ -17,10 +18,15 @@ namespace EchDLC.Items
         public override void SetDefaults()
         {
             item.width = item.height = 40;
-            item.value = 1;
-            item.rare = ItemRarityID.Purple;
+            item.noMelee = true;
+            item.useAnimation = item.useTime = 20;
+            item.useStyle = ItemUseStyleID.SwingThrow;
+            item.UseSound = new LegacySoundStyle(SoundID.Roar, 0);
             item.shoot = ModContent.ProjectileType<EchPet>();
             item.buffType = ModContent.BuffType<EchBuff>();
+            item.value = 1;
+            item.rare = ItemRarityID.Purple;
+
         }
 
         public override void UseStyle(Player player)
