@@ -1,0 +1,4 @@
+displayName = Ech DLC
+author = ElCholoGamer
+version = 0.1
+modReferences = FargowiltasSoulsDLC
