@@ -1,5 +1,6 @@
 ﻿using Terraria;
 using Terraria.ModLoader;
+using EchDLC.Items;
 
 namespace EchDLC.NPCs
 {
@@ -10,9 +11,8 @@ namespace EchDLC.NPCs
             Mod soulsDLC = ModLoader.GetMod("FargowiltasSoulsDLC");
             if (npc.type == soulsDLC.NPCType("Echdeath"))
             {
-
+                Item.NewItem(npc.getRect(), ModContent.ItemType<EchSummon>());
             }
         }
     }
 }
-pepper
