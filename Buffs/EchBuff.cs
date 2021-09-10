@@ -8,6 +8,9 @@ namespace EchDLC.Buffs
     {
         public override void SetDefaults()
         {
+            DisplayName.SetDefault("Ech");
+            Description.SetDefault("ech.");
+
             Main.buffNoTimeDisplay[Type] = true;
             Main.vanityPet[Type] = true;
         }
@@ -15,12 +18,13 @@ namespace EchDLC.Buffs
         public override void Update(Player player, ref int buffIndex)
         {
             player.buffTime[buffIndex] = 18000;
-            //player.GetModPlayer<ExamplePlayer>().examplePet = true;
 
-            bool echAlive = player.ownedProjectileCounts[ModContent.ProjectileType<EchPet>()] > 0;
+            int projType = ModContent.ProjectileType<EchPet>();
+
+            bool echAlive = player.ownedProjectileCounts[projType] > 0;
             if (!echAlive && player.whoAmI == Main.myPlayer)
             {
-                Projectile.NewProjectile(player.Center.X, player.Center.Y, 0f, 0f, ModContent.ProjectileType<EchPet>(), 0, 0f, player.whoAmI);
+                Projectile.NewProjectile(player.Center.X, player.Center.Y, 0f, 0f, projType, 0, 0f, player.whoAmI);
             }
         }
     }
