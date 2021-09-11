@@ -21,7 +21,7 @@ namespace EchDLC.Items
             item.noMelee = true;
             item.useAnimation = item.useTime = 20;
             item.useStyle = ItemUseStyleID.SwingThrow;
-            item.UseSound = new LegacySoundStyle(SoundID.Roar, 0);
+            item.UseSound = SoundID.Item1;
             item.shoot = ModContent.ProjectileType<EchPet>();
             item.buffType = ModContent.BuffType<EchBuff>();
             item.value = 1;
@@ -34,6 +34,7 @@ namespace EchDLC.Items
             if (player.whoAmI == Main.myPlayer && player.itemTime == 0)
             {
                 player.AddBuff(item.buffType, 3600, true);
+                Main.NewText("Add buff");
             }
         }
     }

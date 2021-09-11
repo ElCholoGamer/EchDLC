@@ -1,15 +1,34 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace EchDLC.Projectiles
 {
     public class EchPet : ModProjectile
     {
-        public override string Texture => "FargowiltasSoulsDLC/Base/NPCs/Echdeath";
+        public override string Texture => "Terraria/Projectile_" + ProjectileID.RocketI;
+
+        private Vector2 relativePosition;
+
+        public int Timer
+        {
+            get => (int)projectile.ai[0];
+            set => projectile.ai[0] = value;
+        }
+
+        public override void SetStaticDefaults()
+        {
+            int echType = ModLoader.GetMod("FargowiltasSoulsDLC").NPCType("Echdeath");
+            Main.projFrames[projectile.type] = Main.npcFrameCount[echType];
+            Main.projPet[projectile.type] = true;
+            //ProjectileID.Sets.TrailingMode[projectile.type] = 2;
+        }
+
         public override void SetDefaults()
         {
-            projectile.width = projectile.height = 50;
+            projectile.width = projectile.height = 80;
             projectile.penetrate = -1;
             projectile.netImportant = true;
             projectile.timeLeft *= 5;
@@ -20,28 +39,82 @@ namespace EchDLC.Projectiles
 
         public override void AI()
         {
-            Player owner = Main.player[projectile.owner];
+            Player player = Main.player[projectile.owner];
+            EchPetPlayer modPlayer = player.GetModPlayer<EchPetPlayer>();
 
             #region Owner check
-            if (!owner.active)
+            if (!player.active)
             {
                 projectile.active = false;
                 return;
             }
 
-            if (owner.dead)
+            if (player.dead)
             {
-                projectile.timeLeft = 2;
+                modPlayer.echPet = false;
+            }
+
+            if (!modPlayer.echPet)
+            {
+                projectile.timeLeft = (int)MathHelper.Min(projectile.timeLeft, 2);
+            }
+            #endregion
+
+            #region Animation
+            if (++projectile.frameCounter > 5)
+            {
+                projectile.frameCounter = 0;
+                projectile.frame = (projectile.frame + 1) % Main.projFrames[projectile.type];
             }
             #endregion
 
             #region Movement
-            float speed = 10f;
-            float inertia = 50f;
-            Vector2 maxVelocity = projectile.DirectionTo(owner.Center) * speed;
+            Vector2 targetPosition = player.Center + relativePosition;
+            float distanceLeft = projectile.Distance(targetPosition);
 
-            projectile.velocity = (projectile.velocity * (inertia - 1) + maxVelocity) / inertia;
+            if (distanceLeft < 400f && Timer++ % 60 == 0)
+            {
+                // Change relative position to player
+                float rotate = Main.rand.NextFloat(MathHelper.PiOver2, MathHelper.Pi) * (Main.rand.NextBool() ? 1f : -1f);
+                Vector2 newDirection = Vector2.Normalize(relativePosition).RotatedBy(rotate);
+                relativePosition = newDirection * Main.rand.NextFloat(200f, 300f);
+            }
+
+            if (distanceLeft > 1500f)
+            {
+                projectile.position = targetPosition;
+            } else
+            {
+                float speed = 15f;
+                float inertia = 80f;
+                Vector2 maxVelocity = projectile.DirectionTo(targetPosition) * speed;
+
+                projectile.velocity = (projectile.velocity * (inertia - 1) + maxVelocity) / inertia;
+            }
             #endregion
+        }
+
+        public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
+        {
+            Texture2D texture = ModContent.GetTexture("FargowiltasSoulsDLC/Base/NPCs/Echdeath");
+
+            int frameHeight = texture.Height / Main.projFrames[projectile.type];
+            Vector2 origin = new Vector2(texture.Width, frameHeight) / 2f;
+
+            Rectangle sourceRectangle = new Rectangle(0, projectile.frame * frameHeight, texture.Width, frameHeight);
+
+            spriteBatch.Draw(
+                texture,
+                projectile.Center - Main.screenPosition,
+                sourceRectangle,
+                lightColor,
+                projectile.rotation,
+                origin,
+                2f,
+                SpriteEffects.None,
+                0f);
+
+            return false;
         }
     }
 }
