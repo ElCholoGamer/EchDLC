@@ -9,7 +9,7 @@ namespace EchDLC.Projectiles
 {
     public class EchPet : ModProjectile
     {
-        public override string Texture => "Terraria/Projectile_" + ProjectileID.RocketI;
+        public override string Texture => "FargowiltasSoulsDLC/Base/NPCs/Echdeath";
 
         private Vector2 relativePosition = Vector2.UnitX;
 
@@ -106,7 +106,7 @@ namespace EchDLC.Projectiles
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
         {
-            Texture2D texture = ModContent.GetTexture("FargowiltasSoulsDLC/Base/NPCs/Echdeath");
+            Texture2D texture = Main.projectileTexture[projectile.type];
 
             int frameHeight = texture.Height / Main.projFrames[projectile.type];
             Vector2 origin = new Vector2(texture.Width, frameHeight) / 2f;
