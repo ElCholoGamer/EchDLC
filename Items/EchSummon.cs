@@ -21,7 +21,7 @@ namespace EchDLC.Items
             item.noMelee = true;
             item.useAnimation = item.useTime = 20;
             item.useStyle = ItemUseStyleID.SwingThrow;
-            item.UseSound = SoundID.Item1;
+            item.UseSound = SoundID.NPCHit57;
             item.shoot = ModContent.ProjectileType<EchPet>();
             item.buffType = ModContent.BuffType<EchBuff>();
             item.value = 1;
