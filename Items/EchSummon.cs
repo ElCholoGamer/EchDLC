@@ -34,7 +34,6 @@ namespace EchDLC.Items
             if (player.whoAmI == Main.myPlayer && player.itemTime == 0)
             {
                 player.AddBuff(item.buffType, 3600, true);
-                Main.NewText("Add buff");
             }
         }
     }
