@@ -1,5 +1,5 @@
 displayName = Ech DLC
 author = ElCholoGamer
-version = 1.0.1
+version = 1.0.2
 modReferences = FargowiltasSoulsDLC
 homepage = https://forums.terraria.org/index.php?threads/echdlc-mod.107343/
