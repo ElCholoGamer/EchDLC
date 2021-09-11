@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ID;
@@ -10,7 +11,7 @@ namespace EchDLC.Projectiles
     {
         public override string Texture => "Terraria/Projectile_" + ProjectileID.RocketI;
 
-        private Vector2 relativePosition;
+        private Vector2 relativePosition = Vector2.UnitX;
 
         public int Timer
         {
@@ -23,7 +24,7 @@ namespace EchDLC.Projectiles
             int echType = ModLoader.GetMod("FargowiltasSoulsDLC").NPCType("Echdeath");
             Main.projFrames[projectile.type] = Main.npcFrameCount[echType];
             Main.projPet[projectile.type] = true;
-            //ProjectileID.Sets.TrailingMode[projectile.type] = 2;
+            ProjectileID.Sets.TrailingMode[projectile.type] = 2;
         }
 
         public override void SetDefaults()
@@ -54,30 +55,39 @@ namespace EchDLC.Projectiles
                 modPlayer.echPet = false;
             }
 
-            if (!modPlayer.echPet)
+            if (modPlayer.echPet)
             {
-                projectile.timeLeft = (int)MathHelper.Min(projectile.timeLeft, 2);
+                projectile.timeLeft = 2;
             }
             #endregion
 
-            #region Animation
+            #region Animation and visuals
             if (++projectile.frameCounter > 5)
             {
                 projectile.frameCounter = 0;
                 projectile.frame = (projectile.frame + 1) % Main.projFrames[projectile.type];
             }
+
+            Vector2 targetPosition = player.Center + relativePosition;
+            int newDirection = Math.Sign(targetPosition.X - projectile.Center.X);
+            if (newDirection != 0)
+                projectile.spriteDirection = projectile.direction = newDirection;
+
+            projectile.scale += 0.0004f; // yes
             #endregion
 
             #region Movement
-            Vector2 targetPosition = player.Center + relativePosition;
+            if (relativePosition == null)
+                relativePosition = player.Center;
+
             float distanceLeft = projectile.Distance(targetPosition);
 
             if (distanceLeft < 400f && Timer++ % 60 == 0)
             {
                 // Change relative position to player
                 float rotate = Main.rand.NextFloat(MathHelper.PiOver2, MathHelper.Pi) * (Main.rand.NextBool() ? 1f : -1f);
-                Vector2 newDirection = Vector2.Normalize(relativePosition).RotatedBy(rotate);
-                relativePosition = newDirection * Main.rand.NextFloat(200f, 300f);
+                Vector2 direction = Vector2.Normalize(relativePosition).RotatedBy(rotate);
+                relativePosition = direction * Main.rand.NextFloat(200f, 300f);
             }
 
             if (distanceLeft > 1500f)
@@ -87,9 +97,9 @@ namespace EchDLC.Projectiles
             {
                 float speed = 15f;
                 float inertia = 80f;
-                Vector2 maxVelocity = projectile.DirectionTo(targetPosition) * speed;
+                Vector2 direction = Vector2.Normalize(targetPosition - projectile.Center);
 
-                projectile.velocity = (projectile.velocity * (inertia - 1) + maxVelocity) / inertia;
+                projectile.velocity = (projectile.velocity * (inertia - 1) + direction * speed) / inertia;
             }
             #endregion
         }
@@ -102,6 +112,7 @@ namespace EchDLC.Projectiles
             Vector2 origin = new Vector2(texture.Width, frameHeight) / 2f;
 
             Rectangle sourceRectangle = new Rectangle(0, projectile.frame * frameHeight, texture.Width, frameHeight);
+            SpriteEffects effects = projectile.spriteDirection == -1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 
             spriteBatch.Draw(
                 texture,
@@ -110,8 +121,8 @@ namespace EchDLC.Projectiles
                 lightColor,
                 projectile.rotation,
                 origin,
-                2f,
-                SpriteEffects.None,
+                projectile.scale,
+                effects,
                 0f);
 
             return false;
