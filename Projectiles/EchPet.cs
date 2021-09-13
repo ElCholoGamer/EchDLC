@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -11,13 +12,7 @@ namespace EchDLC.Projectiles
     {
         public override string Texture => "FargowiltasSoulsDLC/Base/NPCs/Echdeath";
 
-        private Vector2 relativePosition = Vector2.UnitX;
-
-        public int Timer
-        {
-            get => (int)projectile.ai[0];
-            set => projectile.ai[0] = value;
-        }
+        private Vector2 relativePosition = Vector2.UnitX * Main.rand.NextFloat(200f, 300f);
 
         public override void SetStaticDefaults()
         {
@@ -73,7 +68,7 @@ namespace EchDLC.Projectiles
             if (newDirection != 0)
                 projectile.spriteDirection = projectile.direction = newDirection;
 
-            projectile.scale += 0.0004f; // yes
+            projectile.scale = 1f + modPlayer.echTime * 0.0005f; // yes
             #endregion
 
             #region Movement
@@ -82,12 +77,17 @@ namespace EchDLC.Projectiles
 
             float distanceLeft = projectile.Distance(targetPosition);
 
-            if (distanceLeft < 400f && Timer++ % 60 == 0)
+            if (Main.myPlayer == projectile.owner && distanceLeft < 400f && modPlayer.echTime % 60 == 0)
             {
                 // Change relative position to player
                 float rotate = Main.rand.NextFloat(MathHelper.PiOver2, MathHelper.Pi) * (Main.rand.NextBool() ? 1f : -1f);
                 Vector2 direction = Vector2.Normalize(relativePosition).RotatedBy(rotate);
-                relativePosition = direction * Main.rand.NextFloat(200f, 300f);
+
+                float multiply = 1f + modPlayer.echTime * 0.000002f;
+                float distance = Main.rand.NextFloat(200f * multiply, 300f * multiply);
+                relativePosition = direction * distance;
+
+                projectile.netUpdate = true;
             }
 
             if (distanceLeft > 1500f)
@@ -102,6 +102,8 @@ namespace EchDLC.Projectiles
                 projectile.velocity = (projectile.velocity * (inertia - 1) + direction * speed) / inertia;
             }
             #endregion
+
+            modPlayer.echTime++;
         }
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
@@ -126,6 +128,16 @@ namespace EchDLC.Projectiles
                 0f);
 
             return false;
+        }
+
+        public override void SendExtraAI(BinaryWriter writer)
+        {
+            writer.WritePackedVector2(relativePosition);
+        }
+
+        public override void ReceiveExtraAI(BinaryReader reader)
+        {
+            relativePosition = reader.ReadPackedVector2();
         }
     }
 }
