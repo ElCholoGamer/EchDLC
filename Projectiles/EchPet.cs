@@ -57,7 +57,8 @@ namespace EchDLC.Projectiles
             #endregion
 
             #region Animation and visuals
-            if (++projectile.frameCounter > 5)
+            int animationSpeed = (int)MathHelper.Max(1, 5 - (int)(modPlayer.echTime * 0.0002f));
+            if (++projectile.frameCounter > animationSpeed)
             {
                 projectile.frameCounter = 0;
                 projectile.frame = (projectile.frame + 1) % Main.projFrames[projectile.type];
@@ -80,10 +81,10 @@ namespace EchDLC.Projectiles
             if (Main.myPlayer == projectile.owner && distanceLeft < 400f && modPlayer.echTime % 60 == 0)
             {
                 // Change relative position to player
-                float rotate = Main.rand.NextFloat(MathHelper.PiOver2, MathHelper.Pi) * (Main.rand.NextBool() ? 1f : -1f);
+                float rotate = Main.rand.NextFloat(MathHelper.PiOver2, MathHelper.Pi * 1.25f) * (Main.rand.NextBool() ? 1f : -1f);
                 Vector2 direction = Vector2.Normalize(relativePosition).RotatedBy(rotate);
 
-                float multiply = 1f + modPlayer.echTime * 0.000002f;
+                float multiply = MathHelper.Min(1f + modPlayer.echTime * 0.000005f, 10f);
                 float distance = Main.rand.NextFloat(200f * multiply, 300f * multiply);
                 relativePosition = direction * distance;
 
@@ -95,11 +96,42 @@ namespace EchDLC.Projectiles
                 projectile.position = targetPosition;
             } else
             {
-                float speed = 15f;
+                float speed = 15f + (modPlayer.echTime * 0.0004f);
                 float inertia = 80f;
                 Vector2 direction = Vector2.Normalize(targetPosition - projectile.Center);
 
                 projectile.velocity = (projectile.velocity * (inertia - 1) + direction * speed) / inertia;
+            }
+            #endregion
+
+            #region Block destroy shenanigans
+            if (modPlayer.echTime > 7200)
+            {
+                // Code "borrowed" from Echdeath source code
+                int radius = (int)(40f * projectile.scale);
+
+                for (float x = -radius / 2f; x <= radius / 2f; x += 8f)
+                {
+                    for (int y = -radius / 2; y <= radius / 2; y += 8)
+                    {
+                        int tileX = (int)(projectile.Center.X + x) / 16;
+                        int tileY = (int)(projectile.Center.Y + x) / 16;
+
+                        if (tileX < 0 || tileX >= Main.maxTilesX || tileY < 0 || tileY >= Main.maxTilesY)
+                            continue;
+
+                        Tile tileSafely = Framing.GetTileSafely(tileX, tileY);
+                        if (tileSafely.type != 0 || tileSafely.wall != 0)
+                        {
+                            WorldGen.KillTile(tileX, tileY, false, false, true);
+                            WorldGen.KillWall(tileX, tileY, false);
+                            if (Main.netMode == NetmodeID.Server)
+                            {
+                                NetMessage.SendData(MessageID.TileChange, -1, -1, null, 0, tileX, tileY, 0f, 0, 0, 0);
+                            }
+                        }
+                    }
+                }
             }
             #endregion
 
