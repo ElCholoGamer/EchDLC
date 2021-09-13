@@ -18,7 +18,7 @@ namespace EchDLC.Buffs
         public override void Update(Player player, ref int buffIndex)
         {
             player.buffTime[buffIndex] = 18000;
-            player.GetModPlayer<EchPetPlayer>().echPet = true;
+            player.GetModPlayer<EchDLCPlayer>().echPet = true;
 
             int projType = ModContent.ProjectileType<EchPet>();
 

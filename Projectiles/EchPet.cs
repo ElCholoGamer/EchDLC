@@ -36,7 +36,7 @@ namespace EchDLC.Projectiles
         public override void AI()
         {
             Player player = Main.player[projectile.owner];
-            EchPetPlayer modPlayer = player.GetModPlayer<EchPetPlayer>();
+            EchDLCPlayer modPlayer = player.GetModPlayer<EchDLCPlayer>();
 
             #region Owner check
             if (!player.active)

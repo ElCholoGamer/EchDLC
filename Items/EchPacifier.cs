@@ -30,7 +30,7 @@ namespace EchDLC.Items
 
         public override bool UseItem(Player player)
         {
-            player.GetModPlayer<EchPetPlayer>().echTime = 0;
+            player.GetModPlayer<EchDLCPlayer>().echTime = 0;
             Main.NewText("Echdeath has been pleased.", Color.LightGreen, false);
 
             return true;

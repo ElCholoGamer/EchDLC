@@ -4,7 +4,7 @@ using Terraria.ModLoader.IO;
 
 namespace EchDLC
 {
-    public class EchPetPlayer : ModPlayer
+    public class EchDLCPlayer : ModPlayer
     {
         public bool echPet = false;
         public int echTime = 0;
@@ -16,7 +16,7 @@ namespace EchDLC
 
         public override void clientClone(ModPlayer clientClone)
         {
-            EchPetPlayer modClone = clientClone as EchPetPlayer;
+            EchDLCPlayer modClone = clientClone as EchDLCPlayer;
             modClone.echTime = echTime;
         }
 
